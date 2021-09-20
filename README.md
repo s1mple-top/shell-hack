@@ -30,7 +30,7 @@ If you have connected to webshell：
 #### Installation:
 
 ```
-git clone https://github.com/WangYihang/Webshell-Sniper
+git clone https://github.com/s1mple-top/shell-hack
 cd shell-hack
 python3 shell-hack.py
 ```
