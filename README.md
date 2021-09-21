@@ -82,6 +82,9 @@ Enviroment :
 
 Tools are always tools, which will have some limitations; If you want to better learn security knowledge, you need to understand the vulnerability principle and trigger mechanism; Tools are only used by the supplier; Should not rely on;
 
+##importance
+
+Note that this script is not for the services enabled by phpstudy, because the local php environment is required to get the version at the beginning, otherwise an error will be reported; because phpstudy cannot execute php -v
 
 
 
