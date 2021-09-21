@@ -17,10 +17,13 @@ class webshell:
         return (''.join(random.sample('zyxwvutsrqponmlkjihgfedcba', 5)))
 
     def connection(self):
+        token = self.random_string()
         url = "http://" + self.urls
+        data = "echo "+token+";echo 's1mple';echo "+token+";"
         req = requests.head(url)
         code = req.status_code
-        if (code == 200):
+        result = self.get_result_from_server(data,token)
+        if (code == 200 and 's1mple' in result):
             return "success"
         else:
             return "false"
