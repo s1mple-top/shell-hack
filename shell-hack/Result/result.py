@@ -9,7 +9,7 @@ class results:
 
     def false(self):
         print("###################################")
-        print("\033[5;31m[+]  false;please try again\033[0m")
+        print("\033[5;31m[+]  connect false;please try again\033[0m")
         print("###################################")
         return "false"
 
