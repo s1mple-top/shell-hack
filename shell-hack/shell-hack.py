@@ -17,7 +17,7 @@ banner="""
 \__ \ | | |  __/ | |_____| | | | (_| | (__|   < 
 |___/_| |_|\___|_|_|     |_| |_|\__,_|\___|_|\_\/
 """
-banners = banner+"\n-----author : s1mple && SUer && Water Paddler-----"
+banners = banner+"\n-------------author : s1mple && SUer--------------"
 
 if(args.shell):
     shell = args.shell.lower()
