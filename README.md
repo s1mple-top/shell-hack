@@ -74,7 +74,7 @@ Enviroment :
 
 ## Contributors:
 
-## s1mple from NCU;
+## s1mple from SU;
 
 
 
