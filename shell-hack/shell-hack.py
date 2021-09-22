@@ -31,7 +31,7 @@ elif(not args.url or not args.pwd or not args.way):
     parser.print_help()
     exit()
 print("\033[0;36m"+banners)
-urls = args.url.lower()  # str
+urls = args.url  # str
 way = args.way.lower()
 pwd = args.pwd
 
