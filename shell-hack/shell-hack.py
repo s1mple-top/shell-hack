@@ -33,7 +33,7 @@ elif(not args.url or not args.pwd or not args.way):
 print("\033[0;36m"+banners)
 urls = args.url.lower()  # str
 way = args.way.lower()
-pwd = args.pwd.lower()
+pwd = args.pwd
 
 if ("https" in urls):
     url = urls[8:]
