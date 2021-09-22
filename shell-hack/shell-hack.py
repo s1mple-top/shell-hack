@@ -21,7 +21,7 @@ banners = banner+"\n-----author : s1mple && SUer && Water Paddler-----"
 
 if(args.shell):
     shell = args.shell.lower()
-    pwd = args.pwd.lower()
+    pwd = args.pwd
     if(shell=="create"):
         pwd = pwd
         print(results().shell(pwd))
