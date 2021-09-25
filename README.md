@@ -84,7 +84,7 @@ Tools are always tools, which will have some limitations; If you want to better 
 
 ## importance：
 
-Note that this script is not for the services enabled by phpstudy, because the local php environment is required to get the version at the beginning, otherwise an error will be reported; The phpstudy cannot use the local terminal to execute php -v；Fortunately, almost no problem or actual environment runs on phpstudy
+Note that this script is not for the services enabled by phpstudy, because the local php environment is required to get the version at the beginning, otherwise an error will be reported; The phpstudy cannot use the local terminal to execute php -v；Fortunately, almost no problem or actual environment runs on phpstudy；In addition, this script is somewhat limited in its function under windows
 
 
 
