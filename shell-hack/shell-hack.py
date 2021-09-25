@@ -109,4 +109,7 @@ if(res=="true"):
         if(result==''):
             print("result is None;The website has some WAF some function is baned;please look the function you can use")
         if(cmd != ''):
-            print(result.replace("&lt;","<").replace("&gt;",">").replace("&#039;","\'").replace("&#34;","\""))
+            if(type(result)=="str"):
+                print(result.replace("&lt;","<").replace("&gt;",">").replace("&#039;","\'").replace("&#34;","\""))
+            else:
+                print(result)
