@@ -42,6 +42,7 @@ Enviroment :
     Attacker :
         Linux;macos;windows;Unix-like
         python3(My Python version 3.8.2)
+    Attacked server：The best state is linux or unix-like; there will be some restrictions under windows
 ```
 
 #### Realize function
